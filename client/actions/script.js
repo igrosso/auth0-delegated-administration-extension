@@ -14,6 +14,27 @@ export function fetchScripts() {
     }
   };
 }
+
+/*
+ * Load script.
+ */
+export function fetchScript(name,onSuccess) {
+  return {
+    type: constants.FETCH_SCRIPT,
+    meta: {
+      onSuccess: () => {
+        if (onSuccess) {
+          onSuccess();
+        }
+      }
+    },
+    payload: {
+      promise: axios.get(`/api/scripts/${name}`, {
+        responseType: 'json'
+      })
+    }
+  };
+}
 /*
  * Update configuration.
  */
@@ -26,7 +47,6 @@ export function updateScripts(data, onSuccess) {
           if (onSuccess) {
             onSuccess();
           }
-          dispatch(fetchScripts());
         }
       },
       payload: {
@@ -50,7 +70,6 @@ export function updateScript(script, data, onSuccess) {
           if (onSuccess) {
             onSuccess();
           }
-          dispatch(fetchScripts());
         }
       },
       payload: {

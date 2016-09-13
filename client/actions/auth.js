@@ -80,3 +80,17 @@ export function getAccessLevel(onSuccess) {
     }
   };
 }
+
+export function getStyles(onSuccess) {
+  return {
+    type: constants.FETCH_STYLES,
+    meta: {
+      onSuccess
+    },
+    payload: {
+      promise: axios.get('/api/styles', {
+        responseType: 'json'
+      })
+    }
+  };
+}

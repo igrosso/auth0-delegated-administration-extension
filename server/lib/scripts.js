@@ -38,12 +38,16 @@ const getScript = (storage, name) =>
           return Promise.reject(err);
         }
       }
-
       return Promise.resolve(convertedFunction);
     })
     .catch(err => Promise.reject(err));
 
-module.exports.getScript = getScript;
+
+module.exports.getScript  = (storage,name) =>
+  storage.read()
+    .then(data => Promise.resolve((data.scripts && data.scripts[name]? data.scripts[name] : null)))
+    .catch(err => Promise.reject(err));
+
 
 module.exports.getAllScripts = (storage) =>
   storage.read()

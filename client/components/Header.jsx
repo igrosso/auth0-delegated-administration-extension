@@ -6,6 +6,7 @@ export default class Header extends Component {
   static propTypes = {
     user: React.PropTypes.object,
     accessLevel: React.PropTypes.object,
+    styles: React.PropTypes.object,
     issuer: React.PropTypes.string,
     onLogout: React.PropTypes.func.isRequired
   }

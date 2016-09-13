@@ -20,104 +20,69 @@ class Configuration extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentCode: 1,
-      confAccess: '',
-      confFilter: '',
-      confMemberships: '',
-      confWrite: '',
-      confStyles: ''
+      currentCode: '',
+      currentName: ''
     };
   }
 
   componentWillMount = () => {
-    this.props.fetchScripts();
+    this.props.fetchScript('access', function () {
+      this.refresh(1, 'access');
+    }.bind(this));
   };
 
   updateCode = (newCode) => {
-    switch (this.state.currentCode) {
-      case 1:
-        this.setState({ confAccess: newCode });
-        break;
-      case 2:
-        this.setState({ confFilter: newCode });
-        break;
-      case 3:
-        this.setState({ confMemberships: newCode });
-        break;
-      case 4:
-        this.setState({ confWrite: newCode });
-        break;
-      case 5:
-        this.setState({ confStyles: newCode });
-        break;
-    }
+    this.setState({ currentCode: newCode });
     return newCode;
   };
 
   onChange = (index) => {
-    this.setState({ currentCode: index });
-    this.refresh();
-  };
-
-  refresh = () => {
-    setTimeout(function () {
-      $('.CodeMirror').each(function() {
-        let self = $(this);
-        self.context.CodeMirror.refresh();
-      });
-    },100);
-  };
-
-  saveConfiguration = () => {
-    let data = {};
-    data['access'] = this.state.confAccess || this.props.access;
-    data['filter'] = this.state.confFilter || this.props.filter;
-    data['memberships'] = this.state.confMemberships || this.props.memberships;
-    data['write'] = this.state.confWrite || this.props.write;
-    data['styles'] = this.state.confStyles || this.props.styles;
-    this.props.updateScripts(data);
-
-  };
-
-  saveOneScript = () => {
-    let data = {};
-    let attr = null;
-    switch (this.state.currentCode) {
+    let attr = '';
+    switch (index) {
       case 1:
-        data['script'] = this.state.confAccess || this.props.access;
         attr = 'access';
         break;
       case 2:
-        data['script'] = this.state.confFilter || this.props.filter;
         attr = 'filter';
         break;
       case 3:
-        data['script'] = this.state.confMemberships || this.props.memberships;
         attr = 'memberships';
         break;
       case 4:
-        data['script'] = this.state.confWrite || this.props.write;
         attr = 'write';
         break;
       case 5:
-        data['script'] = this.state.confStyles || this.props.styles;
         attr = 'styles';
         break;
     }
-    this.props.updateScript(attr, data);
+    this.props.fetchScript(attr, function () {
+      this.refresh(index, attr);
+    }.bind(this));
   };
 
-  getValue = (scripts, index) => {
-    const val = scripts.get(index);
-    if (val) {
-      return val.toString();
-    } else {
-      return '';
-    }
+  refresh = (i, attr) => {
+    this.setState({ currentName: attr });
+    this.setState({ currentCode: this.props.script });
+    const currentCode = String(this.props.script);
+    setTimeout(function () {
+      $('.CodeMirror').each(function (key, index) {
+        if(++key==i) {
+          let self = $(this);
+          self.context.CodeMirror.setValue(currentCode);
+          self.context.CodeMirror.refresh();
+        }
+      });
+    }, 100);
+  };
+
+  saveOneScript = () => {
+    this.props.updateScript(
+      this.state.currentName, { 'script': this.state.currentCode }
+      );
   };
 
   render() {
-    const { scripts, loading, error } = this.props;
+    const { script, loading, error } = this.props;
     const jsHintOptions = {
       options: {
         'sub': true,
@@ -158,10 +123,9 @@ class Configuration extends Component {
           </div>
           <div className="row user-tabs">
             <div className="col-xs-12">
-              { scripts ?
                 <Tabs defaultActiveKey={1} animation={false} onSelect={this.onChange.bind(this)}>
                   <Tab eventKey={1} title="Access Query">
-                    <Codemirror value={ this.getValue(scripts, 'access') }
+                    <Codemirror value=''
                                 onChange={this.updateCode}
                                 options={options}
                                 className="access"
@@ -172,7 +136,7 @@ class Configuration extends Component {
                     </div>
                   </Tab>
                   <Tab eventKey={2} title="Filter Query">
-                    <Codemirror value={this.getValue(scripts, 'filter')}
+                    <Codemirror value=''
                                 onChange={this.updateCode}
                                 options={options}
                                 className="filter"
@@ -183,7 +147,7 @@ class Configuration extends Component {
                     </div>
                   </Tab>
                   <Tab eventKey={3} title="Memberships Query">
-                    <Codemirror value={this.getValue(scripts, 'memberships')}
+                    <Codemirror value=''
                                 onChange={this.updateCode}
                                 options={options}
                                 className="memberships"
@@ -195,7 +159,7 @@ class Configuration extends Component {
                     </div>
                   </Tab>
                   <Tab eventKey={4} title="Write Query">
-                    <Codemirror value={this.getValue(scripts, 'write')}
+                    <Codemirror value=''
                                 onChange={this.updateCode}
                                 options={options}
                                 className="write"
@@ -206,7 +170,7 @@ class Configuration extends Component {
                     </div>
                   </Tab>
                   <Tab eventKey={5} title="Styles">
-                    <Codemirror value={this.getValue(scripts, 'styles')}
+                    <Codemirror value=''
                                 onChange={this.updateCode}
                                 options={options}
                                 className="styles"
@@ -218,7 +182,6 @@ class Configuration extends Component {
                     </div>
                   </Tab>
                 </Tabs>
-                : ''}
             </div>
           </div>
         </div>
@@ -229,14 +192,9 @@ class Configuration extends Component {
 
 function mapStateToProps(state) {
   return {
-    error: state.scripts.get('error'),
-    scripts: state.scripts.get('records'),
-    access: state.scripts.get('records') ? state.scripts.get('records').get('access') : '',
-    filter: state.scripts.get('records') ? state.scripts.get('records').get('filter') : '',
-    memberships: state.scripts.get('records') ? state.scripts.get('records').get('memberships') : '',
-    write: state.scripts.get('records') ? state.scripts.get('records').get('write') : '',
-    styles: state.scripts.get('records') ? state.scripts.get('records').get('styles') : '',
-    loading: state.scripts.get('loading')
+    error: state.script.get('error'),
+    script: state.script.get('record'),
+    loading: state.script.get('loading')
   };
 }
 

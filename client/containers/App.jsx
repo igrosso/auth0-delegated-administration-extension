@@ -17,12 +17,17 @@ class App extends Component {
     this.props.fetchApplications();
     this.props.fetchConnections();
     this.props.getAccessLevel();
+    this.props.getStyles();
   }
 
   render() {
     return (
       <div>
-        <Header user={this.props.user} issuer={this.props.issuer} onLogout={this.props.logout} accessLevel={this.props.accessLevel.toJSON()} />
+        <Header user={this.props.user} issuer={this.props.issuer}
+                onLogout={this.props.logout}
+                accessLevel={this.props.accessLevel.toJSON()}
+                styles={this.props.styles.toJSON()}
+        />
         <div className="container">
           <div className="row">
             <section className="content-page current">
@@ -44,7 +49,8 @@ function select(state) {
     issuer: state.auth.get('issuer'),
     user: state.auth.get('user'),
     ruleStatus: state.ruleStatus,
-    accessLevel: state.accessLevel.get('record')
+    accessLevel: state.accessLevel.get('record'),
+    styles: state.styles.get('record')
   };
 }
 
